@@ -45,3 +45,14 @@ export function isoRangeForDayKeys(keys: string[]): { fromIso: string; untilIso:
   const until = startOfLocalDayFromKey(addLocalDays(newest, 1));
   return { fromIso: from.toISOString(), untilIso: until.toISOString() };
 }
+
+/** Max inclusive calendar-day span for custom range (two calendar years, e.g. 2024-01-01…2025-12-31). */
+export const MAX_CUSTOM_RANGE_INCLUSIVE_DAYS = 731;
+
+/** Inclusive count of local calendar days from `fromKey` through `toKey` (requires fromKey <= toKey). */
+export function inclusiveLocalDaySpan(fromKey: string, toKey: string): number {
+  const a = startOfLocalDayFromKey(fromKey);
+  const b = startOfLocalDayFromKey(toKey);
+  const ms = b.getTime() - a.getTime();
+  return Math.floor(ms / (24 * 60 * 60 * 1000)) + 1;
+}

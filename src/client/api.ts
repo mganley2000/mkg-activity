@@ -33,8 +33,19 @@ async function parseJson<T>(res: Response): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export async function fetchCalendar(days = 30): Promise<DayBucket[]> {
-  const res = await fetch(`/api/days?days=${days}`);
+export type FetchCalendarParams =
+  | { kind: "rolling"; days: number }
+  | { kind: "range"; from: string; to: string };
+
+export async function fetchCalendar(params: FetchCalendarParams): Promise<DayBucket[]> {
+  const search = new URLSearchParams();
+  if (params.kind === "range") {
+    search.set("from", params.from);
+    search.set("to", params.to);
+  } else {
+    search.set("days", String(params.days));
+  }
+  const res = await fetch(`/api/days?${search}`);
   const data = await parseJson<{ days: DayBucket[] }>(res);
   return data.days;
 }

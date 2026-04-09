@@ -1,5 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
+import { inclusiveLocalDaySpan, MAX_CUSTOM_RANGE_INCLUSIVE_DAYS } from "../../lib/dates";
 import type { ActivityService } from "../../services/activityService";
 import { httpError } from "../../middleware/errorHandler";
 
@@ -18,6 +19,9 @@ export function createDaysRouter(activities: ActivityService): Router {
       if (q.from && q.to) {
         if (q.from > q.to) {
           throw httpError(400, "`from` must be <= `to`");
+        }
+        if (inclusiveLocalDaySpan(q.from, q.to) > MAX_CUSTOM_RANGE_INCLUSIVE_DAYS) {
+          throw httpError(400, "Range cannot exceed 2 years");
         }
         const buckets = activities.getCalendarRange(q.from, q.to);
         res.json({ days: buckets });

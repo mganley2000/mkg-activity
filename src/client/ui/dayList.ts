@@ -20,14 +20,20 @@ export function renderDayList(
 ): void {
   container.replaceChildren();
 
-  for (const bucket of days) {
+  const ordered = [...days].sort((a, b) => b.date.localeCompare(a.date));
+  const todayYear = new Date().getFullYear();
+
+  for (let i = 0; i < ordered.length; i++) {
+    const bucket = ordered[i]!;
     const { date, activities } = bucket;
     const block = document.createElement("div");
     block.className = "day-block";
 
-    const label = formatDayLabel(date);
+    const showYearBoundary = shouldShowYearOnDayBoundary(i, ordered, todayYear);
+    const label = formatDayLabel(date, { includeYear: showYearBoundary });
     const header = document.createElement("div");
-    header.className = "day-multi-header";
+    header.className =
+      "day-multi-header" + (showYearBoundary ? " day-multi-header--year-boundary" : "");
     header.textContent = label;
     block.appendChild(header);
 
@@ -91,12 +97,39 @@ function formatCreatedTimeLabel(iso: string): string {
   return formatLocalTime12hWithSeconds(d);
 }
 
-export function formatDayLabel(isoDate: string): string {
+export type FormatDayLabelOptions = {
+  /** When true: e.g. "WED 2025/12/31" (weekday uppercased, full YYYY/MM/DD). */
+  includeYear?: boolean;
+};
+
+export function formatDayLabel(isoDate: string, options?: FormatDayLabelOptions): string {
   const [y, m, d] = isoDate.split("-").map(Number);
   if (!y || !m || !d) return isoDate;
   const dt = new Date(y, m - 1, d);
   const wk = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dt.getDay()];
+  if (options?.includeYear) {
+    const mm = String(m).padStart(2, "0");
+    const dd = String(d).padStart(2, "0");
+    return `${wk.toUpperCase()} ${y}/${mm}/${dd}`;
+  }
   return `${wk} ${m}/${d}`;
+}
+
+function dayKeyYear(dateKey: string): number | null {
+  const y = Number(dateKey.slice(0, 4));
+  return Number.isFinite(y) ? y : null;
+}
+
+/** Newest-first list: show year on the first day that falls in an older calendar year than the row above (or first row if already before this year). */
+function shouldShowYearOnDayBoundary(index: number, ordered: DayBucket[], todayYear: number): boolean {
+  const y = dayKeyYear(ordered[index]!.date);
+  if (y === null) return false;
+  if (index === 0) {
+    return y < todayYear;
+  }
+  const prevY = dayKeyYear(ordered[index - 1]!.date);
+  if (prevY === null) return false;
+  return y < prevY;
 }
 
 function escapeHtml(s: string): string {

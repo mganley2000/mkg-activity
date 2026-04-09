@@ -90,7 +90,6 @@ export function createActivityService(db: Database.Database, tags: TagService) {
         keys.push(k);
         if (k === toKey) break;
         k = addLocalDays(k, 1);
-        if (keys.length > 400) break;
       }
       const sortedKeys = [...keys].sort();
       const minKey = sortedKeys[0]!;
@@ -110,10 +109,13 @@ export function createActivityService(db: Database.Database, tags: TagService) {
           tags: tagsForActivity.all(row.ac_id),
         });
       }
-      return keys.map((date) => ({
-        date,
-        activities: byDay.get(date) ?? [],
-      }));
+      return keys
+        .slice()
+        .reverse()
+        .map((date) => ({
+          date,
+          activities: byDay.get(date) ?? [],
+        }));
     },
 
     getById: getDetail,

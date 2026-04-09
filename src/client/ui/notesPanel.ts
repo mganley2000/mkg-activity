@@ -130,7 +130,11 @@ export function mountNotesPanel(
   callbacks: NotesPanelCallbacks
 ): void {
   if (mode.kind === "idle") {
-    container.innerHTML = `<p class="empty-hint">Select a day on the left, or an empty day to create an activity.</p>`;
+    const statusHtml =
+      status !== null && status !== ""
+        ? `<p class="notes-status${statusIsError ? " is-error" : ""}">${escapeHtml(status)}</p>`
+        : "";
+    container.innerHTML = `<p class="empty-hint">Select a day on the left, or an empty day to create an activity.</p>${statusHtml}`;
     return;
   }
 

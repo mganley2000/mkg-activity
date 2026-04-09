@@ -2,8 +2,64 @@
   <h1 class="app-title"><%= it.title %></h1>
 </header>
 <div class="app-grid">
-  <aside class="timeline" aria-label="Last 30 days">
+  <aside class="timeline" id="days-aside" aria-label="Days by date range">
     <h2 class="timeline-heading">Days</h2>
+    <div id="day-range-toolbar" class="day-range-toolbar" role="group" aria-label="Date range">
+      <div class="day-range-row">
+        <div class="day-range-presets">
+          <button type="button" class="day-range-preset" data-preset="7">Last 7 days</button>
+          <button type="button" class="day-range-preset" data-preset="30">Last 30 days</button>
+        </div>
+        <div class="day-range-picker-wrap">
+          <button
+            type="button"
+            id="day-range-picker"
+            class="day-range-picker-trigger"
+            aria-expanded="false"
+            aria-haspopup="dialog"
+            aria-controls="day-range-popover"
+            title="Pick a custom date range"
+          >
+            <span class="day-range-picker-sr" id="day-range-picker-label">Custom date range</span>
+            <svg
+              class="day-range-cal-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </button>
+          <div
+            id="day-range-popover"
+            class="day-range-popover"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="day-range-dialog-title"
+            hidden
+          >
+            <p id="day-range-dialog-title" class="day-range-popover-title">Custom range</p>
+            <label class="day-range-label"
+              >Newest <input type="date" id="day-range-to" class="day-range-input" autocomplete="off"
+            /></label>
+            <label class="day-range-label"
+              >Oldest <input type="date" id="day-range-from" class="day-range-input" autocomplete="off"
+            /></label>
+            <button type="button" class="day-range-apply" id="day-range-apply">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="day-list" class="day-list"></div>
   </aside>
   <main class="panel" aria-label="Activity detail">

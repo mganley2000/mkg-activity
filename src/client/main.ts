@@ -141,6 +141,47 @@ function formatRangeSummary(): string {
   return `${b.from} to ${b.to} (last ${rangeState.presetDays} days)`;
 }
 
+function buildNotesExportUrl(): string {
+  if (rangeState.mode === "custom") {
+    const p = new URLSearchParams({ from: rangeState.from, to: rangeState.to });
+    return `/api/export/notes?${p}`;
+  }
+  return `/api/export/notes?days=${String(rangeState.presetDays)}`;
+}
+
+async function downloadNotesExportPdf(): Promise<void> {
+  try {
+    const res = await fetch(buildNotesExportUrl());
+    if (!res.ok) {
+      let msg = "Export failed";
+      try {
+        const j = (await res.json()) as { error?: string };
+        if (j.error) msg = j.error;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(msg);
+    }
+    const cd = res.headers.get("Content-Disposition");
+    let filename = "activity-notes.pdf";
+    const m = cd?.match(/filename="([^"]+)"/);
+    if (m?.[1]) filename = m[1];
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Export failed";
+    window.alert(msg);
+  }
+}
+
 function renderRangeToolbar(): void {
   for (const btn of presetBtns) {
     const d = btn.dataset.preset;
@@ -419,6 +460,10 @@ async function loadCalendar(): Promise<void> {
 async function boot(): Promise<void> {
   initMarkdown();
   wireDayRangeToolbar();
+  const exportNotesBtn = document.getElementById("export-notes-pdf");
+  if (exportNotesBtn) {
+    exportNotesBtn.addEventListener("click", () => void downloadNotesExportPdf());
+  }
   renderRangeToolbar();
   await loadCalendar();
   renderDayColumn();

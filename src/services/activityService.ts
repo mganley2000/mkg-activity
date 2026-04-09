@@ -17,6 +17,15 @@ export function createActivityService(db: Database.Database, tags: TagService) {
      ORDER BY ac_updated_datetime DESC`
   );
 
+  const listNotesForExportRange = db.prepare<
+    [string, string],
+    { pl_notes: string; ac_created_datetime: string; ac_calendar_day: string | null }
+  >(
+    `SELECT pl_notes, ac_created_datetime, ac_calendar_day FROM activity
+     WHERE ac_calendar_day >= ? AND ac_calendar_day <= ?
+     ORDER BY ac_calendar_day DESC, ac_created_datetime DESC`
+  );
+
   const getRow = db.prepare<[number], ActivityRow>(
     `SELECT ac_id, pl_notes, ac_created_datetime, ac_updated_datetime, ac_calendar_day FROM activity WHERE ac_id = ?`
   );
@@ -116,6 +125,13 @@ export function createActivityService(db: Database.Database, tags: TagService) {
           date,
           activities: byDay.get(date) ?? [],
         }));
+    },
+
+    listNotesForExportRange(
+      minKey: string,
+      maxKey: string
+    ): { pl_notes: string; ac_created_datetime: string; ac_calendar_day: string | null }[] {
+      return listNotesForExportRange.all(minKey, maxKey);
     },
 
     getById: getDetail,

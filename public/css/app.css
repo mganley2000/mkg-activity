@@ -325,6 +325,43 @@ body {
   overflow-y: auto;
 }
 
+.timeline-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 0.5rem;
+  margin-top: 0.3rem;
+  border-top: 1px solid var(--border);
+}
+
+.timeline-export-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.timeline-export-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+  background: rgba(91, 159, 212, 0.1);
+}
+
+.timeline-export-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
 .day-block {
   display: flex;
   flex-direction: column;

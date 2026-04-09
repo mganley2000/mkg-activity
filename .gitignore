@@ -82,6 +82,12 @@ out
 .nuxt
 dist
 
+# SQLite DB and bundled client (WAL mode creates -wal / -shm next to the main file; *.db ignores only that file)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+public/assets/app.js
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

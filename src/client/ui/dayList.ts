@@ -1,0 +1,108 @@
+import type { DayBucket } from "../api";
+
+export type DayListHandlers = {
+  onSelectNewActivityForDay: (dateKey: string) => void;
+  onSelectActivity: (dateKey: string, activityId: number) => void;
+};
+
+export type DayListSelection = {
+  activeDayKey: string | null;
+  activeActivityId: number | null;
+  /** Highlights the "New activity" row when in create mode for this day. */
+  activeNewActivityDayKey: string | null;
+};
+
+export function renderDayList(
+  container: HTMLElement,
+  days: DayBucket[],
+  selection: DayListSelection,
+  handlers: DayListHandlers
+): void {
+  container.replaceChildren();
+
+  for (const bucket of days) {
+    const { date, activities } = bucket;
+    const block = document.createElement("div");
+    block.className = "day-block";
+
+    const label = formatDayLabel(date);
+    const header = document.createElement("div");
+    header.className = "day-multi-header";
+    header.textContent = label;
+    block.appendChild(header);
+
+    const sorted = sortActivitiesNewestFirst(activities);
+
+    for (const act of sorted) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      const isActive =
+        selection.activeDayKey === date && selection.activeActivityId === act.id;
+      btn.className = "day-row day-row-nested" + (isActive ? " is-active" : "");
+      const tagsBlock =
+        act.tags.length > 0
+          ? `<div class="day-list-tags" aria-label="Tags">${act.tags
+              .map((t) => `<span class="day-list-tag">${escapeHtml(t.vt_name)}</span>`)
+              .join("")}</div>`
+          : "";
+      btn.innerHTML = `<span class="day-meta">${escapeHtml(activityRowLabel(act.createdAt))}</span>${tagsBlock}`;
+      btn.addEventListener("click", () => handlers.onSelectActivity(date, act.id));
+      block.appendChild(btn);
+    }
+
+    const newBtn = document.createElement("button");
+    newBtn.type = "button";
+    const newIsActive = selection.activeNewActivityDayKey === date;
+    newBtn.className = "day-row day-row-nested day-row-new" + (newIsActive ? " is-active" : "");
+    newBtn.innerHTML = `<span class="day-meta">${escapeHtml("New activity")}</span>`;
+    newBtn.addEventListener("click", () => handlers.onSelectNewActivityForDay(date));
+    block.appendChild(newBtn);
+
+    container.appendChild(block);
+  }
+}
+
+function sortActivitiesNewestFirst<T extends { updatedAt: string }>(activities: T[]): T[] {
+  return [...activities].sort((a, b) => {
+    const ta = new Date(a.updatedAt).getTime();
+    const tb = new Date(b.updatedAt).getTime();
+    return tb - ta;
+  });
+}
+
+/** e.g. "08:53:20 PM" (12-hour, seconds, two-digit hour). */
+export function formatLocalTime12hWithSeconds(d: Date): string {
+  return d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
+/** e.g. "Activity 08:53:20 PM" (local created time). */
+function activityRowLabel(createdAtIso: string): string {
+  return `Activity ${formatCreatedTimeLabel(createdAtIso)}`;
+}
+
+function formatCreatedTimeLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return formatLocalTime12hWithSeconds(d);
+}
+
+export function formatDayLabel(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  if (!y || !m || !d) return isoDate;
+  const dt = new Date(y, m - 1, d);
+  const wk = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dt.getDay()];
+  return `${wk} ${m}/${d}`;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}

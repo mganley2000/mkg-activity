@@ -1,0 +1,12 @@
+<header class="app-header">
+  <h1 class="app-title"><%= it.title %></h1>
+</header>
+<div class="app-grid">
+  <aside class="timeline" aria-label="Last 30 days">
+    <h2 class="timeline-heading">Days</h2>
+    <div id="day-list" class="day-list"></div>
+  </aside>
+  <main class="panel" aria-label="Activity detail">
+    <div id="notes-panel" class="notes-panel"></div>
+  </main>
+</div>
